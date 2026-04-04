@@ -1,0 +1,40 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data files (too large for git)
+*.csv
+*.tsv
+*.json
+*.jsonl
+*.parquet
+*.orc
+*.sqlite
+*.db
+*.h5
+*.hdf5
+
+# Model checkpoints
+*.pth
+*.pt
+*.ckpt
+*.pkl
+
+# Environment
+.env
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
