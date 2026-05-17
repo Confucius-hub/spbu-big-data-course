@@ -1,0 +1,186 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hw3-postgres
+    environment:
+      POSTGRES_DB: hive_metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  namenode:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-namenode
+    hostname: namenode
+    environment:
+      SERVICE_ROLE: namenode
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  datanode1:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-datanode1
+    hostname: datanode1
+    environment:
+      SERVICE_ROLE: datanode
+    depends_on:
+      - namenode
+    volumes:
+      - datanode1_data:/hadoop/dfs/data
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  datanode2:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-datanode2
+    hostname: datanode2
+    environment:
+      SERVICE_ROLE: datanode
+    depends_on:
+      - namenode
+    volumes:
+      - datanode2_data:/hadoop/dfs/data
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  resourcemanager:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-resourcemanager
+    hostname: resourcemanager
+    environment:
+      SERVICE_ROLE: resourcemanager
+    depends_on:
+      - namenode
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  nodemanager1:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-nodemanager1
+    hostname: nodemanager1
+    environment:
+      SERVICE_ROLE: nodemanager
+    depends_on:
+      - resourcemanager
+      - datanode1
+    volumes:
+      - yarn_nm1:/hadoop/yarn
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  nodemanager2:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-nodemanager2
+    hostname: nodemanager2
+    environment:
+      SERVICE_ROLE: nodemanager
+    depends_on:
+      - resourcemanager
+      - datanode2
+    volumes:
+      - yarn_nm2:/hadoop/yarn
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  historyserver:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-historyserver
+    hostname: historyserver
+    environment:
+      SERVICE_ROLE: historyserver
+    depends_on:
+      - namenode
+      - resourcemanager
+    ports:
+      - "19888:19888"
+    volumes:
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./:/workspace
+
+  hive-metastore:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-hive-metastore
+    hostname: hive-metastore
+    environment:
+      SERVICE_ROLE: hive-metastore
+    depends_on:
+      - postgres
+      - namenode
+    ports:
+      - "9083:9083"
+    volumes:
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./conf/hive:/opt/hive/conf
+      - ./:/workspace
+
+  hive-server2:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-hive-server2
+    hostname: hive-server2
+    environment:
+      SERVICE_ROLE: hive-server2
+    depends_on:
+      - hive-metastore
+    ports:
+      - "10000:10000"
+    volumes:
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./conf/hive:/opt/hive/conf
+      - ./:/workspace
+
+  zeppelin:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-zeppelin
+    hostname: zeppelin
+    environment:
+      SERVICE_ROLE: zeppelin
+      ZEPPELIN_ADDR: 0.0.0.0
+    depends_on:
+      - resourcemanager
+      - hive-server2
+    ports:
+      - "8890:8080"
+    volumes:
+      - zeppelin_notes:/opt/zeppelin/notebook
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./conf/hive:/opt/hive/conf
+      - ./conf/spark:/opt/spark/conf
+      - ./conf/zeppelin/zeppelin-env.sh:/opt/zeppelin/conf/zeppelin-env.sh
+      - ./:/workspace
+
+  client:
+    image: bigdata-hw3-stack:latest
+    container_name: hw3-client
+    hostname: client
+    environment:
+      SERVICE_ROLE: client
+    depends_on:
+      - namenode
+      - resourcemanager
+      - hive-server2
+    volumes:
+      - ./conf/hadoop:/opt/hadoop/etc/hadoop
+      - ./conf/hive:/opt/hive/conf
+      - ./conf/spark:/opt/spark/conf
+      - ./:/workspace
+
+volumes:
+  namenode_data:
+  datanode1_data:
+  datanode2_data:
+  yarn_nm1:
+  yarn_nm2:
+  postgres_data:
+  zeppelin_notes:
