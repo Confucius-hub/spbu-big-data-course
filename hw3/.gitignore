@@ -1,0 +1,10 @@
+.DS_Store
+data/*
+!data/.gitkeep
+results/*
+!results/.gitkeep
+.conda_envs/
+*.tar.gz
+*.log
+__pycache__/
+.ipynb_checkpoints/
