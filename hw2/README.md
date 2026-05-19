@@ -4,7 +4,7 @@ This folder contains the second BigData homework notebook.
 
 Main file:
 
-- `HW2_full.ipynb` - Google Colab/Jupyter notebook with ClickHouse setup checks,
+- `HW2_full.ipynb` - Jupyter notebook with ClickHouse setup checks,
   generated user logs, SPU calculation, sorting-key benchmark, plots, and the
   C++ binding extension for HW1.
 
